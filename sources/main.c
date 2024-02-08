@@ -67,7 +67,7 @@ int main(int argc, char** argv)
             print_elf64_header(&file_header_64);
 
         if (print_section_headers)
-            print_section_header_64(section_headers_64, &file_header_64, fptr);   
+            print_section_headers_64(section_headers_64, &file_header_64, fptr);   
     }
 
     free(section_headers_32);
