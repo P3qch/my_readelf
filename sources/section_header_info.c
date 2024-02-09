@@ -201,6 +201,7 @@ static char * get_section_flags(int flags)
     return buff;
 }
 
+
 void print_section_headers_64(const Elf64_Shdr* sh, const Elf64_Ehdr* file_header, FILE* f)
 {
     int sh_str_table = sh[file_header->e_shstrndx].sh_offset;
