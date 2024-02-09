@@ -1,6 +1,7 @@
 my_readelf
 compile_commands.json
 objects/
+.cache
 
 # Prerequisites
 *.d
