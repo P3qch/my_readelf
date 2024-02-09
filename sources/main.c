@@ -54,6 +54,9 @@ int main(int argc, char** argv)
 
         if (print_file_header)
             print_elf32_header(&file_header_32);
+
+        if (print_section_headers)
+            print_section_headers_32(section_headers_32, &file_header_32, fptr);   
     }
     /* 64 bits */
     else if (file_header_32.e_ident[EI_CLASS] == ELFCLASS64)

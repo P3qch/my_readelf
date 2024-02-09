@@ -201,6 +201,34 @@ static char * get_section_flags(int flags)
     return buff;
 }
 
+void print_section_headers_32(const Elf32_Shdr* sh, const Elf32_Ehdr* file_header, FILE* f)
+{
+    int sh_str_table = sh[file_header->e_shstrndx].sh_offset;
+    char name[SECTION_NAME_LEN] = {0};
+    int i = 0;
+    puts("Section headers:");
+    puts("  [Num]  Name                  Type              Address           File offset       Entry size");
+    puts("         Size                  Entry Size        flags             Link  Info  Align");
+    puts("  ========================================================================================================");
+    for (i = 0; i < file_header->e_shnum; i++)
+    {
+
+        get_string_at_offset(name,f, sh_str_table + sh[i].sh_name); // name in section header is an offset
+
+        printf("  [%3d]  %-20.20s  %-16.16s  %.016x  %.016x  %.016x\n", 
+                    i,   name,  get_section_type(sh[i].sh_type), sh[i].sh_addr, sh[i].sh_offset, sh[i].sh_entsize);
+        printf("         %016x      %.016x  %-16.16s  %4x  %4x   %4x\n",
+                 sh[i].sh_size, sh[i].sh_entsize, get_section_flags(sh[i].sh_flags), sh[i].sh_link, sh[i].sh_info, (unsigned int)sh[i].sh_addralign);
+    }
+    puts("  Flag key: W - Should be writable during execution, A - Occupies memory during execution, X - Executable,");
+    puts("            M - read here: https://docs.oracle.com/cd/E23824_01/html/819-0690/ggdlu.html, ");
+    puts("            S - contains  null terminated strings, character size specified in the Entry Size field,");
+    puts("            I - the Info field contains a section index, L - Preserve order after combining,");
+    puts("            O - non-standard OS specific handling required, G - Section is member of a group, T - Contains TLS");
+    puts("            C - Section with compressed data, o - os specific flags, p - Processor specific flag, R - section should not be");
+    puts("            garbage collected by linker, r - special ordering requirement, E - section is excluded unless referenced or allocated");
+
+}
 
 void print_section_headers_64(const Elf64_Shdr* sh, const Elf64_Ehdr* file_header, FILE* f)
 {
