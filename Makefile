@@ -12,7 +12,7 @@ OBJECTS=$(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
 
 .PHONY: all clean
 
-all: $(EXE) clean
+all: $(EXE)
 
 $(EXE): $(OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS)

@@ -112,25 +112,119 @@ const char* get_section_type(long type)
 }
 
 
+static char * get_section_flags(int flags)
+{
+    static char buff[17];
+    char flag;
+    char* p = buff;
+    if (flags & SHF_WRITE)
+    {
+        *p = 'W';
+        p++;
+    }
+    if (flags & SHF_ALLOC)
+    {
+        *p = 'A';
+        p++;
+    }
+    if (flags & SHF_EXECINSTR)
+    {
+        *p = 'X';
+        p++;
+    }
+    if (flags & SHF_MERGE)
+    {
+        *p = 'M';
+        p++;
+    }
+    if (flags & SHF_STRINGS)
+    {
+        *p = 'S';
+        p++;
+    }
+    if (flags & SHF_INFO_LINK)
+    {
+        *p = 'I';
+        p++;
+    }
+    if (flags & SHF_LINK_ORDER)
+    {
+        *p = 'L';
+        p++;
+    }
+    if (flags & SHF_OS_NONCONFORMING)
+    {
+        *p = 'O';
+        p++;
+    }
+    if (flags & SHF_GROUP)
+    {
+        *p = 'G';
+        p++;
+    }
+    if (flags & SHF_TLS)
+    {
+        *p = 'T';
+        p++;
+    }
+    if (flags & SHF_COMPRESSED)
+    {
+        *p = 'C';
+        p++;
+    }
+    if (flags & SHF_MASKOS)
+    {
+        *p = 'o';
+        p++;
+    }
+    if (flags & SHF_MASKPROC)
+    {
+        *p = 'p';
+        p++;
+    }
+    if (flags & SHF_GNU_RETAIN)
+    {
+        *p = 'R';
+        p++;
+    }
+    if (flags & SHF_ORDERED)
+    {
+        *p = 'r';
+        p++;
+    }
+    if (flags & SHF_EXCLUDE)
+    {
+        *p = 'E';
+        p++;
+    }
+    *p = 0;
+    return buff;
+}
+
 void print_section_headers_64(const Elf64_Shdr* sh, const Elf64_Ehdr* file_header, FILE* f)
 {
     int sh_str_table = sh[file_header->e_shstrndx].sh_offset;
     char name[SECTION_NAME_LEN] = {0};
     int i = 0;
     puts("Section headers:");
-    puts("  [Num]  Name              Type              Address           File offset");
-    puts("         Size              Entry Size        ");
+    puts("  [Num]  Name                  Type              Address           File offset       Entry size");
+    puts("         Size                  Entry Size        flags             Link  Info  Align");
+    puts("  ========================================================================================================");
     for (i = 0; i < file_header->e_shnum; i++)
     {
 
         get_string_at_offset(name,f, sh_str_table + sh[i].sh_name); // name in section header is an offset
 
-        printf("  [%3d]  %-16.16s  ", i, name);
-        printf("%-16.16s  ", get_section_type(sh[i].sh_type));
-        printf("%.016lx  ", sh[i].sh_addr);
-        printf("%.016lx\n", sh[i].sh_offset);
-        printf("         %016lx  ", sh[i].sh_size);
-        printf("%.016lx  ", sh[i].sh_entsize);
-        putchar('\n');
+        printf("  [%3d]  %-20.20s  %-16.16s  %.016lx  %.016lx  %.016lx\n", 
+                    i,   name,  get_section_type(sh[i].sh_type), sh[i].sh_addr, sh[i].sh_offset, sh[i].sh_entsize);
+        printf("         %016lx      %.016lx  %-16.16s  %4x  %4x   %4x\n",
+                 sh[i].sh_size, sh[i].sh_entsize, get_section_flags(sh[i].sh_flags), sh[i].sh_link, sh[i].sh_info, (unsigned int)sh[i].sh_addralign);
     }
+    puts("  Flag key: W - Should be writable during execution, A - Occupies memory during execution, X - Executable,");
+    puts("            M - read here: https://docs.oracle.com/cd/E23824_01/html/819-0690/ggdlu.html, ");
+    puts("            S - contains  null terminated strings, character size specified in the Entry Size field,");
+    puts("            I - the Info field contains a section index, L - Preserve order after combining,");
+    puts("            O - non-standard OS specific handling required, G - Section is member of a group, T - Contains TLS");
+    puts("            C - Section with compressed data, o - os specific flags, p - Processor specific flag, R - section should not be");
+    puts("            garbage collected by linker, r - special ordering requirement, E - section is excluded unless referenced or allocated");
 }
