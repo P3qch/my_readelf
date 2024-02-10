@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -c -ggdb -m32
-LDFLAGS = -m32
+CFLAGS = -c -ggdb
+LDFLAGS =
 SRCDIR = sources
 INCDIR = headers
 OBJDIR = objects

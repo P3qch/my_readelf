@@ -1,6 +1,6 @@
 #pragma once
-#ifndef H_PROGRAM_HEADER_INFO
-#define H_PROGRAM_HEADER_INFO
+#ifndef H_SECTION_HEADER_INFO
+#define H_SECTION_HEADER_INFO
 #include <elf.h>
 #include <stdio.h>
 

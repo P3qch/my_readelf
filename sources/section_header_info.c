@@ -206,7 +206,7 @@ void print_section_headers_32(const Elf32_Shdr* sh, const Elf32_Ehdr* file_heade
     int sh_str_table = sh[file_header->e_shstrndx].sh_offset;
     char name[SECTION_NAME_LEN] = {0};
     int i = 0;
-    puts("Section headers:");
+    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", file_header->e_shnum, file_header->e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");
@@ -235,7 +235,7 @@ void print_section_headers_64(const Elf64_Shdr* sh, const Elf64_Ehdr* file_heade
     int sh_str_table = sh[file_header->e_shstrndx].sh_offset;
     char name[SECTION_NAME_LEN] = {0};
     int i = 0;
-    puts("Section headers:");
+    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", file_header->e_shnum, (void*)file_header->e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");

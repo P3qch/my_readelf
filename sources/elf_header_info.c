@@ -368,13 +368,13 @@ void print_file_type(int ft) {
             printf("No file type\n");
             break;
         case ET_REL:
-            printf("Relocatable file\n");
+            printf("REL (Relocatable file)\n");
             break;
         case ET_EXEC:
-            printf("Executable file\n");
+            printf("EXEC (Executable file)\n");
             break;
         case ET_DYN:
-            printf("Shared object file (PIE enabled executable)\n");
+            printf("DYN (PIE enabled executable)\n");
             break;
         case ET_CORE:
             printf("Core file\n");
