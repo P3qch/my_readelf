@@ -64,26 +64,26 @@ static char * get_p_flags(int p_flags)
     return buf;
 }
 
-void print_program_header_64(Elf64_Phdr* program_header, Elf64_Ehdr* file_header, FILE* f)
+void print_program_header_64(Filedata64* fdata, FILE* f)
 {
-    printf("There are %d program headers starting at offset %p:\nProgram headers:\n", file_header->e_phnum, (void*)file_header->e_phoff);
+    printf("There are %d program headers starting at offset %p:\nProgram headers:\n", fdata->file_header.e_phnum, (void*)fdata->file_header.e_phoff);
     printf("  Type            Offset            Virtual addr      Physical addr\n");
     printf("                  Size in file      Size in memory    Flags  Align\n");
     char interp[1024] = {0};
-    for (int i = 0; i < file_header->e_phnum; i++)
+    for (int i = 0; i < fdata->file_header.e_phnum; i++)
     {
         printf("  %-14s  %016lx  %016lx  %016lx\n", 
-                get_p_type(program_header[i].p_type), 
-                program_header[i].p_offset, program_header[i].p_vaddr, 
-                program_header[i].p_paddr);
+                get_p_type(fdata->program_headers[i].p_type), 
+                fdata->program_headers[i].p_offset, fdata->program_headers[i].p_vaddr, 
+                fdata->program_headers[i].p_paddr);
         printf("                  %016lx  %016lx  %s    0x%lx\n", 
-            program_header[i].p_filesz, program_header[i].p_memsz, get_p_flags(program_header[i].p_flags), program_header[i].p_align);
+            fdata->program_headers[i].p_filesz, fdata->program_headers[i].p_memsz, get_p_flags(fdata->program_headers[i].p_flags), fdata->program_headers[i].p_align);
 
-        if (program_header[i].p_type == PT_INTERP)
+        if (fdata->program_headers[i].p_type == PT_INTERP)
         {
-            fseek(f, program_header[i].p_offset, SEEK_SET);
-            fread(interp, 1, program_header->p_filesz, f);
-            interp[program_header->p_filesz -1 ] = 0;
+            fseek(f, fdata->program_headers[i].p_offset, SEEK_SET);
+            fread(interp, 1, fdata->program_headers[i].p_filesz, f);
+            interp[fdata->program_headers[i].p_filesz -1 ] = 0;
             printf("        Interpreter: %s\n", interp);
         }    
     }

@@ -5,18 +5,17 @@
 #include "elf_header_info.h"
 #include "program_header_info.h"
 #include "section_header_info.h"
+#include "filedata.h"
 
 int main(int argc, char** argv)
 {
     FILE *fptr = NULL;
-    Elf32_Ehdr file_header_32; Elf64_Ehdr file_header_64;
-    Elf32_Shdr* section_headers_32 = NULL; Elf64_Shdr* section_headers_64 = NULL; 
-    Elf32_Phdr* program_headers_32 = NULL; Elf64_Phdr* program_headers_64 = NULL;
+    Filedata32 fdata32; Filedata64 fdata64;
 
     char print_file_header = 0, print_section_headers = 0, load_program_headers = 0,print_program_header  = 0;
     char load_section_headers = 0;
 
-    int opt = 0, i = 0;
+    int opt = 0;
 
     while ((opt = getopt(argc, argv, "hSl")) != -1)
     {
@@ -49,46 +48,48 @@ int main(int argc, char** argv)
         return 1;
     }
     
-    read_elf32_header(fptr, &file_header_32);
+    read_elf32_header(fptr, &fdata32.file_header);
 
     /* is 32 bits */
-    if (file_header_32.e_ident[EI_CLASS] == ELFCLASS32)
+    if (fdata32.file_header.e_ident[EI_CLASS] == ELFCLASS32)
     {
         if (load_section_headers)
-            section_headers_32 = get_section_headers_32(fptr, &file_header_32);
+            fdata32.section_headers = get_section_headers_32(fptr, &fdata32.file_header);
 
         if (print_file_header)
-            print_elf32_header(&file_header_32);
+            print_elf32_header(&fdata32.file_header);
 
         if (print_section_headers)
-            print_section_headers_32(section_headers_32, &file_header_32, fptr);   
+            print_section_headers_32(&fdata32, fptr);   
+        
     }
     /* 64 bits */
-    else if (file_header_32.e_ident[EI_CLASS] == ELFCLASS64)
+    else if (fdata32.file_header.e_ident[EI_CLASS] == ELFCLASS64)
     {
-        read_elf64_header(fptr, &file_header_64); // get 64 bit info
+        read_elf64_header(fptr, &fdata64.file_header); // get 64 bit info
 
         if (load_section_headers)
-            section_headers_64 = get_section_headers_64(fptr, &file_header_64);
+            fdata64.section_headers = get_section_headers_64(fptr, &fdata64.file_header);
 
         if (load_program_headers)
-            program_headers_64 = get_program_headers_64(fptr, &file_header_64);
+            fdata64.program_headers = get_program_headers_64(fptr, &fdata64.file_header);
 
         if (print_file_header)
-            print_elf64_header(&file_header_64);
+            print_elf64_header(&fdata64.file_header);
 
         if (print_section_headers)
-            print_section_headers_64(section_headers_64, &file_header_64, fptr);   
+            print_section_headers_64(&fdata64, fptr);   
         
         if (print_program_header)
-            print_program_header_64(program_headers_64, &file_header_64, fptr);
+            print_program_header_64(&fdata64, fptr);
     }
 
-
-    free(program_headers_32);
-    free(program_headers_64);
-    free(section_headers_32);
-    free(section_headers_64);
+    free(fdata32.section_headers);
+    free(fdata32.program_headers);
+    free(fdata32.str_table);
+    free(fdata64.section_headers);
+    free(fdata64.program_headers);
+    free(fdata64.str_table);
     fclose(fptr);
     return 0;
 }

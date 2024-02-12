@@ -22,19 +22,6 @@ Elf64_Shdr* get_section_headers_64(FILE* f, const Elf64_Ehdr* file_header)
     return result;
 }
 
-void get_string_at_offset(char* dst, FILE* f, int offset)
-{
-    fseek(f, offset, SEEK_SET);
-    char ch = 0;
-    int i = 0;
-    while ((ch = fgetc(f)) != EOF && ch != 0 && i < SECTION_NAME_LEN - 1)
-    {
-        dst[i] = ch;
-        i++;
-    }
-    dst[i] = 0;
-}
-
 const char* get_section_type(long type)
 {
     switch (type) {
@@ -201,24 +188,24 @@ static char * get_section_flags(int flags)
     return buff;
 }
 
-void print_section_headers_32(const Elf32_Shdr* sh, const Elf32_Ehdr* file_header, FILE* f)
+void print_section_headers_32(Filedata32* fdata, FILE* f)
 {
-    int sh_str_table = sh[file_header->e_shstrndx].sh_offset;
-    char name[SECTION_NAME_LEN] = {0};
+    fdata->str_table = (char*)malloc(fdata->section_headers[fdata->file_header.e_shstrndx].sh_size);
+    fseek(f, fdata->section_headers[fdata->file_header.e_shstrndx].sh_offset, SEEK_SET);
+    fread(fdata->str_table, fdata->section_headers[fdata->file_header.e_shstrndx].sh_size, 1, f);
+
     int i = 0;
-    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", file_header->e_shnum, file_header->e_shoff);
+    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");
-    for (i = 0; i < file_header->e_shnum; i++)
+    for (i = 0; i < fdata->file_header.e_shnum; i++)
     {
 
-        get_string_at_offset(name,f, sh_str_table + sh[i].sh_name); // name in section header is an offset
-
         printf("  [%3d]  %-20.20s  %-16.16s  %.016x  %.016x  %.016x\n", 
-                    i,   name,  get_section_type(sh[i].sh_type), sh[i].sh_addr, sh[i].sh_offset, sh[i].sh_entsize);
+                    i,   &fdata->str_table[fdata->section_headers[i].sh_name],  get_section_type(fdata->section_headers[i].sh_type), fdata->section_headers[i].sh_addr, fdata->section_headers[i].sh_offset, fdata->section_headers[i].sh_entsize);
         printf("         %016x      %.016x  %-16.16s  %4x  %4x   %4x\n",
-                 sh[i].sh_size, sh[i].sh_entsize, get_section_flags(sh[i].sh_flags), sh[i].sh_link, sh[i].sh_info, (unsigned int)sh[i].sh_addralign);
+                 fdata->section_headers[i].sh_size, fdata->section_headers[i].sh_entsize, get_section_flags(fdata->section_headers[i].sh_flags), fdata->section_headers[i].sh_link, fdata->section_headers[i].sh_info, (unsigned int)fdata->section_headers[i].sh_addralign);
     }
     puts("  Flag key: W - Should be writable during execution, A - Occupies memory during execution, X - Executable,");
     puts("            M - read here: https://docs.oracle.com/cd/E23824_01/html/819-0690/ggdlu.html, ");
@@ -230,24 +217,24 @@ void print_section_headers_32(const Elf32_Shdr* sh, const Elf32_Ehdr* file_heade
 
 }
 
-void print_section_headers_64(const Elf64_Shdr* sh, const Elf64_Ehdr* file_header, FILE* f)
+void print_section_headers_64(Filedata64* fdata, FILE* f)
 {
-    int sh_str_table = sh[file_header->e_shstrndx].sh_offset;
-    char name[SECTION_NAME_LEN] = {0};
+    fdata->str_table = (char*)malloc(fdata->section_headers[fdata->file_header.e_shstrndx].sh_size);
+    fseek(f, fdata->section_headers[fdata->file_header.e_shstrndx].sh_offset, SEEK_SET);
+    fread(fdata->str_table, fdata->section_headers[fdata->file_header.e_shstrndx].sh_size, 1, f);
+
     int i = 0;
-    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", file_header->e_shnum, (void*)file_header->e_shoff);
+    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");
-    for (i = 0; i < file_header->e_shnum; i++)
+    for (i = 0; i < fdata->file_header.e_shnum; i++)
     {
 
-        get_string_at_offset(name,f, sh_str_table + sh[i].sh_name); // name in section header is an offset
-
         printf("  [%3d]  %-20.20s  %-16.16s  %.016lx  %.016lx  %.016lx\n", 
-                    i,   name,  get_section_type(sh[i].sh_type), sh[i].sh_addr, sh[i].sh_offset, sh[i].sh_entsize);
+                    i,   &fdata->str_table[fdata->section_headers[i].sh_name],  get_section_type(fdata->section_headers[i].sh_type), fdata->section_headers[i].sh_addr, fdata->section_headers[i].sh_offset, fdata->section_headers[i].sh_entsize);
         printf("         %016lx      %.016lx  %-16.16s  %4x  %4x   %4x\n",
-                 sh[i].sh_size, sh[i].sh_entsize, get_section_flags(sh[i].sh_flags), sh[i].sh_link, sh[i].sh_info, (unsigned int)sh[i].sh_addralign);
+                 fdata->section_headers[i].sh_size, fdata->section_headers[i].sh_entsize, get_section_flags(fdata->section_headers[i].sh_flags), fdata->section_headers[i].sh_link, fdata->section_headers[i].sh_info, (unsigned int)fdata->section_headers[i].sh_addralign);
     }
     puts("  Flag key: W - Should be writable during execution, A - Occupies memory during execution, X - Executable,");
     puts("            M - read here: https://docs.oracle.com/cd/E23824_01/html/819-0690/ggdlu.html, ");
@@ -256,4 +243,5 @@ void print_section_headers_64(const Elf64_Shdr* sh, const Elf64_Ehdr* file_heade
     puts("            O - non-standard OS specific handling required, G - Section is member of a group, T - Contains TLS");
     puts("            C - Section with compressed data, o - os specific flags, p - Processor specific flag, R - section should not be");
     puts("            garbage collected by linker, r - special ordering requirement, E - section is excluded unless referenced or allocated");
+
 }
