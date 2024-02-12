@@ -22,6 +22,8 @@ Elf64_Shdr* get_section_headers_64(FILE* f, const Elf64_Ehdr* file_header)
     return result;
 }
 
+
+
 const char* get_section_type(long type)
 {
     switch (type) {
@@ -190,12 +192,8 @@ static char * get_section_flags(int flags)
 
 void print_section_headers_32(Filedata32* fdata, FILE* f)
 {
-    fdata->str_table = (char*)malloc(fdata->section_headers[fdata->file_header.e_shstrndx].sh_size);
-    fseek(f, fdata->section_headers[fdata->file_header.e_shstrndx].sh_offset, SEEK_SET);
-    fread(fdata->str_table, fdata->section_headers[fdata->file_header.e_shstrndx].sh_size, 1, f);
-
     int i = 0;
-    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
+    printf("\n\n\nThere are %d section headers, starting at offset %p:\n\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");
@@ -203,7 +201,7 @@ void print_section_headers_32(Filedata32* fdata, FILE* f)
     {
 
         printf("  [%3d]  %-20.20s  %-16.16s  %.016x  %.016x  %.016x\n", 
-                    i,   &fdata->str_table[fdata->section_headers[i].sh_name],  get_section_type(fdata->section_headers[i].sh_type), fdata->section_headers[i].sh_addr, fdata->section_headers[i].sh_offset, fdata->section_headers[i].sh_entsize);
+                    i,   &fdata->shstrtab[fdata->section_headers[i].sh_name],  get_section_type(fdata->section_headers[i].sh_type), fdata->section_headers[i].sh_addr, fdata->section_headers[i].sh_offset, fdata->section_headers[i].sh_entsize);
         printf("         %016x      %.016x  %-16.16s  %4x  %4x   %4x\n",
                  fdata->section_headers[i].sh_size, fdata->section_headers[i].sh_entsize, get_section_flags(fdata->section_headers[i].sh_flags), fdata->section_headers[i].sh_link, fdata->section_headers[i].sh_info, (unsigned int)fdata->section_headers[i].sh_addralign);
     }
@@ -219,12 +217,8 @@ void print_section_headers_32(Filedata32* fdata, FILE* f)
 
 void print_section_headers_64(Filedata64* fdata, FILE* f)
 {
-    fdata->str_table = (char*)malloc(fdata->section_headers[fdata->file_header.e_shstrndx].sh_size);
-    fseek(f, fdata->section_headers[fdata->file_header.e_shstrndx].sh_offset, SEEK_SET);
-    fread(fdata->str_table, fdata->section_headers[fdata->file_header.e_shstrndx].sh_size, 1, f);
-
     int i = 0;
-    printf("There are %d section headers, starting at offset %p:\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
+    printf("\n\n\nThere are %d section headers, starting at offset %p:\n\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");
@@ -232,7 +226,7 @@ void print_section_headers_64(Filedata64* fdata, FILE* f)
     {
 
         printf("  [%3d]  %-20.20s  %-16.16s  %.016lx  %.016lx  %.016lx\n", 
-                    i,   &fdata->str_table[fdata->section_headers[i].sh_name],  get_section_type(fdata->section_headers[i].sh_type), fdata->section_headers[i].sh_addr, fdata->section_headers[i].sh_offset, fdata->section_headers[i].sh_entsize);
+                    i,   &fdata->shstrtab[fdata->section_headers[i].sh_name],  get_section_type(fdata->section_headers[i].sh_type), fdata->section_headers[i].sh_addr, fdata->section_headers[i].sh_offset, fdata->section_headers[i].sh_entsize);
         printf("         %016lx      %.016lx  %-16.16s  %4x  %4x   %4x\n",
                  fdata->section_headers[i].sh_size, fdata->section_headers[i].sh_entsize, get_section_flags(fdata->section_headers[i].sh_flags), fdata->section_headers[i].sh_link, fdata->section_headers[i].sh_info, (unsigned int)fdata->section_headers[i].sh_addralign);
     }
@@ -243,5 +237,26 @@ void print_section_headers_64(Filedata64* fdata, FILE* f)
     puts("            O - non-standard OS specific handling required, G - Section is member of a group, T - Contains TLS");
     puts("            C - Section with compressed data, o - os specific flags, p - Processor specific flag, R - section should not be");
     puts("            garbage collected by linker, r - special ordering requirement, E - section is excluded unless referenced or allocated");
+
+}
+
+
+void get_shstrtab_32(FILE* f, Filedata32* fdata)
+{
+    Elf32_Shdr* strtab_sh = &fdata->section_headers[fdata->file_header.e_shstrndx];
+
+    fdata->shstrtab = (char*)malloc(strtab_sh->sh_size);
+    fseek(f, strtab_sh->sh_offset, SEEK_SET);
+    fread(fdata->shstrtab, strtab_sh->sh_size, 1, f);
+
+}
+
+void get_shstrtab_64(FILE* f, Filedata64* fdata)
+{
+    Elf64_Shdr* strtab_sh = &fdata->section_headers[fdata->file_header.e_shstrndx];
+
+    fdata->shstrtab = (char*)malloc(strtab_sh->sh_size);
+    fseek(f, strtab_sh->sh_offset, SEEK_SET);
+    fread(fdata->shstrtab, strtab_sh->sh_size, 1, f);
 
 }

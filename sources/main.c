@@ -27,7 +27,7 @@ int main(int argc, char** argv)
                 print_section_headers = load_section_headers = 1;
                 break;
             case 'l':
-                print_program_header = load_program_headers = 1;
+                print_program_header = load_program_headers = load_section_headers = 1;
                 break;
             default:
                 break;
@@ -54,8 +54,10 @@ int main(int argc, char** argv)
     if (fdata32.file_header.e_ident[EI_CLASS] == ELFCLASS32)
     {
         if (load_section_headers)
+        {
             fdata32.section_headers = get_section_headers_32(fptr, &fdata32.file_header);
-
+            get_shstrtab_32(fptr, &fdata32);
+        }
         if (print_file_header)
             print_elf32_header(&fdata32.file_header);
 
@@ -69,8 +71,10 @@ int main(int argc, char** argv)
         read_elf64_header(fptr, &fdata64.file_header); // get 64 bit info
 
         if (load_section_headers)
+        {
             fdata64.section_headers = get_section_headers_64(fptr, &fdata64.file_header);
-
+            get_shstrtab_64(fptr, &fdata64);
+        }
         if (load_program_headers)
             fdata64.program_headers = get_program_headers_64(fptr, &fdata64.file_header);
 
@@ -86,10 +90,10 @@ int main(int argc, char** argv)
 
     free(fdata32.section_headers);
     free(fdata32.program_headers);
-    free(fdata32.str_table);
+    free(fdata32.shstrtab);
     free(fdata64.section_headers);
     free(fdata64.program_headers);
-    free(fdata64.str_table);
+    free(fdata64.shstrtab);
     fclose(fptr);
     return 0;
 }
