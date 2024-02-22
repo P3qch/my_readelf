@@ -193,7 +193,7 @@ static char * get_section_flags(int flags)
 void print_section_headers_32(Filedata32* fdata, FILE* f)
 {
     int i = 0;
-    printf("\n\n\nThere are %d section headers, starting at offset %p:\n\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
+    printf("\n\n\nThere are %d section headers, starting at offset 0x%x:\n\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");
@@ -218,7 +218,7 @@ void print_section_headers_32(Filedata32* fdata, FILE* f)
 void print_section_headers_64(Filedata64* fdata, FILE* f)
 {
     int i = 0;
-    printf("\n\n\nThere are %d section headers, starting at offset %p:\n\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
+    printf("\n\n\nThere are %d section headers, starting at offset 0x%lx:\n\nSection headers:\n", fdata->file_header.e_shnum, fdata->file_header.e_shoff);
     puts("  [Num]  Name                  Type              Address           File offset       Entry size");
     puts("         Size                  Entry Size        flags             Link  Info  Align");
     puts("  ========================================================================================================");

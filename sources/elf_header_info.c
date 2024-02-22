@@ -374,7 +374,7 @@ void print_file_type(int ft) {
             printf("EXEC (Executable file)\n");
             break;
         case ET_DYN:
-            printf("DYN (PIE enabled executable)\n");
+            printf("DYN\n");
             break;
         case ET_CORE:
             printf("Core file\n");

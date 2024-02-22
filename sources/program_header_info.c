@@ -2,7 +2,6 @@
 #include "stdlib.h"
 #include <elf.h>
 #include <stdio.h>
-#include <string.h>
 
 Elf32_Phdr* get_program_headers_32(FILE* f, const Elf32_Ehdr* file_header)
 {
