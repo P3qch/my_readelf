@@ -374,7 +374,7 @@ void print_file_type(int ft) {
             printf("EXEC (Executable file)\n");
             break;
         case ET_DYN:
-            printf("DYN\n");
+            printf("DYN\n"); // TODO: tell user if the object is shared object file or PIE executable
             break;
         case ET_CORE:
             printf("Core file\n");
