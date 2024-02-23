@@ -58,11 +58,18 @@ int main(int argc, char** argv)
             fdata32.section_headers = get_section_headers_32(fptr, &fdata32.file_header);
             get_shstrtab_32(fptr, &fdata32);
         }
+
+        if (load_program_headers)
+            fdata32.program_headers = get_program_headers_32(fptr, &fdata32.file_header);
+
         if (print_file_header)
             print_elf32_header(&fdata32.file_header);
 
         if (print_section_headers)
-            print_section_headers_32(&fdata32, fptr);   
+            print_section_headers_32(&fdata32, fptr); 
+
+        if (print_program_header)
+            print_program_header_32(&fdata32, fptr);  
         
     }
     /* 64 bits */
