@@ -68,6 +68,48 @@ static char * get_p_flags(int p_flags)
 }
 
 
+int section_in_segment_32(Elf32_Shdr* section, Elf32_Phdr* segment)
+{
+    /* Only PT_LOAD, PT_GNU_RELRO and PT_TLS segments can contain SHF_TLS sections */
+    if (section->sh_flags & SHF_TLS)
+    {
+        if (!(segment->p_type == PT_LOAD || segment->p_type == PT_GNU_RELRO || segment->p_type & PT_TLS))
+            return 0;
+    }
+    /* Non-TLS sections cannot be in PT_TLS or PT_PHDR segments. */
+    else 
+    {
+        if (segment->p_type == PT_TLS || segment->p_type == PT_PHDR)
+            return 0;
+    }
+
+    /* PT_LOAD and similar segments only have SHF_ALLOC sections */
+    if (!(section->sh_flags & SHF_ALLOC)) {
+        if (segment->p_type == PT_LOAD || segment->p_type == PT_DYNAMIC ||
+            segment->p_type == PT_GNU_EH_FRAME || segment->p_type == PT_GNU_STACK ||
+            segment->p_type == PT_GNU_RELRO)
+            return 0;
+    }
+
+    /* All section types excpet SHT_NOBITS must have offset inside segment offset */
+    if (section->sh_type != SHT_NOBITS)
+    {
+        if (!IN_RANGE(section->sh_offset,                    segment->p_offset, segment->p_offset + segment->p_filesz) ||
+            !IN_RANGE(section->sh_offset + section->sh_size, segment->p_offset, segment->p_offset + segment->p_filesz))
+            return 0;
+    }
+
+    if (section->sh_flags & SHF_ALLOC)
+    {
+        if (!IN_RANGE(section->sh_addr,                    segment->p_vaddr, segment->p_vaddr + segment->p_memsz) ||
+            !IN_RANGE(section->sh_addr + section->sh_size, segment->p_vaddr, segment->p_vaddr + segment->p_memsz))
+            return 0;
+    }
+
+    return 1;
+}
+
+
 int section_in_segment_64(Elf64_Shdr* section, Elf64_Phdr* segment)
 {
     /* Only PT_LOAD, PT_GNU_RELRO and PT_TLS segments can contain SHF_TLS sections */
@@ -108,6 +150,51 @@ int section_in_segment_64(Elf64_Shdr* section, Elf64_Phdr* segment)
 
     return 1;
 }
+
+
+void print_program_header_32(Filedata32* fdata, FILE* f)
+{
+    printf("\n\n\nThere are %d program headers starting at offset %p:\n\nProgram headers:\n", fdata->file_header.e_phnum, (void*)fdata->file_header.e_phoff);
+    printf("  [Num]  Type            Offset            Virtual addr      Physical addr\n");
+    printf("                         Size in file      Size in memory    Flags  Align\n");
+    char interp[1024] = {0};
+    int i  = 0 , len =0;
+
+
+    for (i = 0; i < fdata->file_header.e_phnum; i++)
+    {
+        printf("  [%3d]  %-14s  %016x  %016x  %016x\n", 
+                i, get_p_type(fdata->program_headers[i].p_type), 
+                fdata->program_headers[i].p_offset, fdata->program_headers[i].p_vaddr, 
+                fdata->program_headers[i].p_paddr);
+        printf("                         %016x  %016x  %s    0x%x\n", 
+            fdata->program_headers[i].p_filesz, fdata->program_headers[i].p_memsz, get_p_flags(fdata->program_headers[i].p_flags), fdata->program_headers[i].p_align);
+
+        if (fdata->program_headers[i].p_type == PT_INTERP)
+        {
+            fseek(f, fdata->program_headers[i].p_offset, SEEK_SET);
+            fread(interp, 1, fdata->program_headers[i].p_filesz, f);
+            interp[fdata->program_headers[i].p_filesz -1 ] = 0;
+            printf("        Interpreter: %s\n", interp);
+        }    
+    }
+    
+    printf("  Section to segment mapping:\n    Segment Sections\n");
+    for (i = 0; i < fdata->file_header.e_phnum; i++)
+    {
+        printf("    %02d    ", i);
+        for (int j = 0; j < fdata->file_header.e_shnum; j++)
+        {
+            if (section_in_segment_32(&fdata->section_headers[j], &fdata->program_headers[i]))
+            {
+                printf("%s ", &fdata->shstrtab[fdata->section_headers[j].sh_name]);
+            }        
+
+        }
+        putchar('\n');
+    }
+}
+
 
 void print_program_header_64(Filedata64* fdata, FILE* f)
 {
