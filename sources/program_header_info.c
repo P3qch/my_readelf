@@ -154,7 +154,7 @@ int section_in_segment_64(Elf64_Shdr* section, Elf64_Phdr* segment)
 
 void print_program_header_32(Filedata32* fdata, FILE* f)
 {
-    printf("\n\n\nThere are %d program headers starting at offset 0x%x:\n\nProgram headers:\n", fdata->file_header.e_phnum, fdata->file_header.e_phoff);
+    printf("There are %d program headers starting at offset 0x%x:\n\nProgram headers:\n", fdata->file_header.e_phnum, fdata->file_header.e_phoff);
     printf("  [Num]  Type            Offset            Virtual addr      Physical addr\n");
     printf("                         Size in file      Size in memory    Flags  Align\n");
     char interp[1024] = {0};
@@ -198,7 +198,7 @@ void print_program_header_32(Filedata32* fdata, FILE* f)
 
 void print_program_header_64(Filedata64* fdata, FILE* f)
 {
-    printf("\n\n\nThere are %d program headers starting at offset %p:\n\nProgram headers:\n", fdata->file_header.e_phnum, (void*)fdata->file_header.e_phoff);
+    printf("There are %d program headers starting at offset %p:\n\nProgram headers:\n", fdata->file_header.e_phnum, (void*)fdata->file_header.e_phoff);
     printf("  [Num]  Type            Offset            Virtual addr      Physical addr\n");
     printf("                         Size in file      Size in memory    Flags  Align\n");
     char interp[1024] = {0};
