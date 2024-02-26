@@ -6,18 +6,22 @@
 #include "program_header_info.h"
 #include "section_header_info.h"
 #include "filedata.h"
+#include "symbols.h"
 
 int main(int argc, char** argv)
 {
     FILE *fptr = NULL;
     Filedata32 fdata32; Filedata64 fdata64;
 
-    char print_file_header = 0, print_section_headers = 0, load_program_headers = 0,print_program_header  = 0;
+    char print_file_header = 0, print_section_headers = 0;
+    char load_program_headers = 0, print_program_header  = 0;
+    char print_symbols = 0;
+
     char load_section_headers = 0;
 
     int opt = 0;
 
-    while ((opt = getopt(argc, argv, "hSl")) != -1)
+    while ((opt = getopt(argc, argv, "hSls")) != -1)
     {
         switch (opt) {
             case 'h':
@@ -28,6 +32,9 @@ int main(int argc, char** argv)
                 break;
             case 'l':
                 print_program_header = load_program_headers = load_section_headers = 1;
+                break;
+            case 's':
+                load_section_headers = print_symbols = 1;
                 break;
             default:
                 break;
@@ -93,6 +100,9 @@ int main(int argc, char** argv)
         
         if (print_program_header)
             print_program_header_64(&fdata64, fptr);
+        
+        if (print_symbols)
+            print_symbol_tables_64(&fdata64, fptr);
     }
 
     free(fdata32.section_headers);

@@ -26,6 +26,22 @@ const char* get_symbol_type_str(unsigned char st_info)
     }
 }
 
+const char* get_symbol_bind_str(unsigned char st_info)
+{
+    unsigned char bind = ELF32_ST_BIND(st_info);
+    switch (bind)
+    {
+        case STB_LOCAL:
+            return "LOCAL";
+        case STB_GLOBAL:
+            return "GLOBAL";
+        case STB_WEAK:
+            return "WEAK";
+        default:
+            return "";
+    }
+}
+
 void print_symbol_table_64(Filedata64* fdata, Elf64_Shdr* symtab, Elf64_Shdr* strtab, FILE* f)
 {
     Elf64_Sym* symbols = (Elf64_Sym*)malloc(symtab->sh_size);
@@ -33,7 +49,7 @@ void print_symbol_table_64(Filedata64* fdata, Elf64_Shdr* symtab, Elf64_Shdr* st
     int symbolnum = symtab->sh_size / symtab->sh_entsize;
     char* strings = (char*)malloc(symtab->sh_size);
 
-    printf("Symbol table %s contains %d entries.\n\n", &fdata->shstrtab[symtab->sh_name], symbolnum);
+    printf("\nSymbol table %s contains %d entries.\n", &fdata->shstrtab[symtab->sh_name], symbolnum);
 
     fseek(f, symtab->sh_offset, SEEK_SET);
     fread(symbols, symtab->sh_size, 1, f);
@@ -41,10 +57,12 @@ void print_symbol_table_64(Filedata64* fdata, Elf64_Shdr* symtab, Elf64_Shdr* st
     fseek(f, strtab->sh_offset, SEEK_SET);
     fread(strings, strtab->sh_size, 1, f);
 
-    printf("  Num: Value            Type\n");
+    printf("  Num: Value             Size  Type     Bind\n");
     for (int i = 0; i < symbolnum;i++)
     {
-        printf("  %03u: %016lx  %04lu", i, symbols[i].st_value, symbols[i].st_size);
+        printf("  %3u: %016lx  %4lu  %-7s  %-7sA\n", 
+        i, symbols[i].st_value, symbols[i].st_size, 
+        get_symbol_type_str(symbols[i].st_info), get_symbol_bind_str(symbols[i].st_info));
     }
     free(symbols);
     free(strings);
@@ -56,7 +74,7 @@ void print_symbol_tables_64(Filedata64* fdata, FILE* f)
     for (int i = 0; i < fdata->file_header.e_shnum; i++)
     {
         symtab = &fdata->section_headers[i];
-        if (symtab->sh_type == SHT_SYMTAB)
+        if (symtab->sh_type == SHT_SYMTAB || symtab->sh_type == SHT_DYNSYM)
         {   
             strtab = &fdata->section_headers[symtab->sh_link];
             print_symbol_table_64(fdata, symtab, strtab, f);
